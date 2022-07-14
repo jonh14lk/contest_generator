@@ -3,7 +3,7 @@ import Home from '../Home'
 import api from '../../services/api'
 import "./index.css";
 
-export interface ProblemsInterface {
+export interface Problems {
     status: string;
     result: {
         problems: {
@@ -16,20 +16,23 @@ export interface ProblemsInterface {
 }
 
 const Main = () => {
-    const [problems, setProblems] = useState<ProblemsInterface>();
+    const [problems, setProblems] = useState<Problems>();
     
     useEffect(() => {
-        api
-        .get("/problemset.problems")
-        .then((response) => setProblems(response.data))
-        .catch((err) => {
-            console.error(err);
-        });
+        const getProblems = () => {
+            api.get("/problemset.problems").then((response) => {
+                setProblems(response.data)
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+        }
+        getProblems();
     }, []);
 
     return (
         <div>
-          <Home problems={problems} setProblems={setProblems}></Home>
+          <Home problems={problems} ></Home>
         </div>
     );
 }
