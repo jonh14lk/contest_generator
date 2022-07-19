@@ -1,4 +1,5 @@
 import { Problems } from "../components/Main";
+import { User } from "../utils/User";
 import arrayShuffle from 'array-shuffle';
 
 export interface HashMap<Number, T2> {
@@ -42,7 +43,10 @@ export class Contest {
         }
     }
 
-    generate = (): Array<Problem> => {
+    generate = async (handle: string): Promise<Array<Problem>> => {
+        var user: User = new User(handle);
+        await user.setup();
+
         var contestProblems: Array<Problem> = [];
         var contestRatings: Array<number> = [];
 
@@ -60,13 +64,17 @@ export class Contest {
         
         contestRatings.forEach((rating) => {
             if (this.by_index[rating] !== undefined) {
-                var randomIndex = Math.floor(Math.random() * this.by_index[rating].length)
-                contestProblems.push(this.by_index[rating][randomIndex]);
+                for (var tries = 0; tries < 1000; tries++) {
+                    var randomIndex = Math.floor(Math.random() * this.by_index[rating].length)
+                    
+                    if (!user.solved(this.by_index[rating][randomIndex])) {
+                        contestProblems.push(this.by_index[rating][randomIndex]);
+                        break;
+                    }
+                }
             }
         });
 
         return contestProblems;
     }
-
-
 }

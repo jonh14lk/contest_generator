@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
 import Home from '../Home'
 import api from '../../services/api'
-import "./index.css";
+import "./index.css"
 
 export interface Problems {
     status: string;

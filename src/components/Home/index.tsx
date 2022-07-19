@@ -1,14 +1,20 @@
-import { useState } from "react";
-import { Problems } from "../Main";
+import { useState } from "react"
+import { Problems } from "../Main"
 import { Contest, Problem } from "../../utils/Contest"
-import "./index.css";
+import AddHandle from "../AddHandle"
+import "./index.css"
 
 interface Props {
     problems: Problems | undefined;
 }
 
+export interface Handle {
+  name: string;
+}
+
 const Home: React.FC<Props> = ({ problems }) => {
     const [contestProblems, setContestProblems] = useState<Array<Problem>>([]);
+    const [handle, setHandle] = useState<Handle>({ name: "" });
 
     var contest: Contest = new Contest(problems);
 
@@ -25,15 +31,16 @@ const Home: React.FC<Props> = ({ problems }) => {
         });
     };
 
-    const handleClick = () => {
-      setContestProblems(contest.generate());
+    const handleClick = async () => {
+      setContestProblems(await contest.generate(handle.name));
     };
 
     return (
-        <div className="AddPattern">
+        <div>
           <ul>{renderList()}</ul>
-          <button className="PatternBtn" onClick={handleClick}>
-            Generate Contest
+          <AddHandle handle={handle} setHandle={setHandle}/>
+          <button onClick={handleClick}>
+            Generate Problemset
           </button>
         </div>
     );
