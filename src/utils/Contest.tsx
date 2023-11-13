@@ -1,80 +1,115 @@
 import { Problems } from "../components/Main";
 import { User } from "../utils/User";
-import arrayShuffle from 'array-shuffle';
-
-export interface HashMap<Number, T2> {
-    [Key: number]: T2;
-}
+import arrayShuffle from "array-shuffle";
 
 export interface Problem {
-    contestId: number;
-    index: string;
-    name: string;
-    rating: number;
-    link: string;
+  contestId: number;
+  index: string;
+  name: string;
+  rating: number;
+  link: string;
 }
 
 export class Contest {
-    by_index: HashMap<number, Array<Problem>>;
-    ratings:  Set<number>;
+  problems: Array<Problem>;
 
-    constructor(allProblems?: Problems) {
-        this.by_index = {};
-        this.ratings = new Set();
+  constructor(allProblems?: Problems) {
+    this.problems = [];
 
-        if (allProblems) {
-            allProblems?.result.problems.forEach((problem) => {
-                if (problem.rating) {
-                    this.by_index[problem.rating] = [];
-                    this.ratings.add(problem.rating)
-                }
-            });
-            allProblems?.result.problems.forEach((problem) => {
-                if (problem.rating) {
-                    this.by_index[problem.rating].push({
-                        contestId: problem.contestId,
-                        name: problem.name,
-                        rating: problem.rating,
-                        index: problem.index,
-                        link: "https://codeforces.com/contest/" + problem.contestId +  "/problem/" + problem.index
-                    });
-                }
-            });
-        }
+    allProblems?.result.problems.forEach((problem) => {
+      if (problem.rating) {
+        this.problems.push({
+          contestId: problem.contestId,
+          name: problem.name,
+          rating: problem.rating,
+          index: problem.index,
+          link:
+            "https://codeforces.com/contest/" +
+            problem.contestId +
+            "/problem/" +
+            problem.index,
+        });
+      }
+    });
+
+    this.problems.sort((a, b) => a.rating - b.rating);
+  }
+
+  findFirstWithRatingAtLeastX = (x: number) => {
+    if (
+      !this.problems.length ||
+      this.problems[this.problems.length - 1].rating < x
+    ) {
+      return -1;
     }
 
-    generate = async (handle: string): Promise<Array<Problem>> => {
-        var user: User = new User(handle);
-        await user.setup();
+    let left = 0,
+      right = this.problems.length - 1;
 
-        var contestProblems: Array<Problem> = [];
-        var contestRatings: Array<number> = [];
-
-        this.ratings.forEach((rating) => {
-            contestRatings.push(rating)
-        });
-
-        contestRatings = arrayShuffle(contestRatings);
-
-        while(contestRatings.length > 6) {
-            contestRatings.pop();
-        }
-        
-        contestRatings.sort((a, b) => a - b);
-        
-        contestRatings.forEach((rating) => {
-            if (this.by_index[rating] !== undefined) {
-                for (var tries = 0; tries < 1000; tries++) {
-                    var randomIndex = Math.floor(Math.random() * this.by_index[rating].length)
-                    
-                    if (!user.solved(this.by_index[rating][randomIndex])) {
-                        contestProblems.push(this.by_index[rating][randomIndex]);
-                        break;
-                    }
-                }
-            }
-        });
-
-        return contestProblems;
+    while (left < right) {
+      const mid = Math.floor((left + right) / 2);
+      if (this.problems[mid].rating >= x) {
+        right = mid;
+      } else {
+        left = mid + 1;
+      }
     }
+
+    return left;
+  };
+
+  findLastWithRatingAtMostX = (x: number) => {
+    if (!this.problems.length || this.problems[0].rating > x) {
+      return -1;
+    }
+
+    let left = 0,
+      right = this.problems.length - 1;
+
+    while (left < right) {
+      const mid = Math.floor((left + right + 1) / 2);
+      if (this.problems[mid].rating <= x) {
+        left = mid;
+      } else {
+        right = mid - 1;
+      }
+    }
+
+    return left;
+  };
+
+  generate = async (
+    handle: string,
+    ratingLowerBound: number,
+    ratingUpperBound: number,
+    ProblemsNumber: number
+  ): Promise<Array<Problem>> => {
+    var user: User = new User(handle);
+    await user.setup();
+
+    var left_index = this.findFirstWithRatingAtLeastX(ratingLowerBound);
+    var right_index = this.findLastWithRatingAtMostX(ratingUpperBound);
+    var len = right_index - left_index + 1;
+
+    if (left_index == -1 || right_index == -1) {
+      return [];
+    }
+
+    var validProblems: Array<Problem> = [];
+
+    while (left_index < right_index) {
+      if (!user.solved(this.problems[left_index])) {
+        validProblems.push(this.problems[left_index]);
+      }
+      left_index++;
+    }
+
+    if (validProblems.length < ProblemsNumber) {
+      return [];
+    }
+
+    return arrayShuffle(validProblems)
+      .slice(0, ProblemsNumber)
+      .sort((a, b) => a.rating - b.rating);
+  };
 }
