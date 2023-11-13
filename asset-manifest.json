@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/contest_generator/static/css/main.e6c13ad2.css",
-    "main.js": "/contest_generator/static/js/main.41a7a9c4.js",
+    "main.js": "/contest_generator/static/js/main.699029f5.js",
     "index.html": "/contest_generator/index.html",
     "main.e6c13ad2.css.map": "/contest_generator/static/css/main.e6c13ad2.css.map",
-    "main.41a7a9c4.js.map": "/contest_generator/static/js/main.41a7a9c4.js.map"
+    "main.699029f5.js.map": "/contest_generator/static/js/main.699029f5.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.41a7a9c4.js"
+    "static/js/main.699029f5.js"
   ]
 }
